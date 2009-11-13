@@ -1,0 +1,10 @@
+Gem requirements:
+
+simple-rss
+activeresource
+
+To run tests you'll need:
+
+rspec
+fakeweb
+
