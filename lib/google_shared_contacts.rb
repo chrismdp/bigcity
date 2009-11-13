@@ -35,10 +35,14 @@ class GoogleSharedContacts
 
   class ContactList < Array
     def initialize(xml = nil)
+      super(0)
       if (xml)
         list = Hpricot(xml)
         (list/"entry").each do |entry|
-          self.push(Contact.new(:id => entry/"id", :updated_at => entry/"updated", :email => (entry/"gd:email").first.attributes[:address]))
+          contact = Contact.new(:id => (entry/"id").inner_html.strip,
+                                :updated_at => Time.parse((entry/"updated").inner_html),
+                                :email => (entry/"gd:email").first.attributes[:address])
+          self << contact
         end
       end
     end
@@ -49,5 +53,9 @@ class GoogleSharedContacts
   end
 
   class Contact < Hash
+    def initialize(hash = {})
+      super
+      merge! hash
+    end
   end
 end

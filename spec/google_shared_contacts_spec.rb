@@ -13,7 +13,7 @@ describe "Google Shared Contacts" do
   end
 
   context "replacing contacts on the server" do
-    it "deletes contacts beofre creating new ones" do
+    it "deletes contacts before creating new ones" do
       contacts = mock(:contacts)
       @gsc.should_receive(:delete_all)
       @gsc.should_receive(:create_all).with(contacts).and_return(true)
@@ -47,16 +47,37 @@ describe "Google Shared Contacts" do
     end
   end
 
-  context "creating contacts from an external list"
+  context "creating contacts from an external list" do
+  end
 
   context "ContactList" do
     context "initialization" do
       it "works without parameters creating an empty list" do
         GoogleSharedContacts::ContactList.new.size == 0
       end
-      it "works with atom xml to create a list of contacts" do
-        list = GoogleSharedContacts::ContactList.new(File.read("fixtures/contact_list.xml"))
-        list.size.should == 1
+      context "with atom xml" do
+        before do
+          GoogleSharedContacts::Contact.stub!(:new).and_return(mock(:contact))
+        end
+
+        it "creates multiple contacts" do
+          list = GoogleSharedContacts::ContactList.new(File.read("fixtures/contact_list.xml"))
+          list.size.should == 2
+        end
+        it "loads contacts with ids" do
+          GoogleSharedContacts::Contact.should_receive(:new).with(hash_including(:id)).and_return(mock(:contact))
+          list = GoogleSharedContacts::ContactList.new(File.read("fixtures/contact_list.xml"))
+        end
+        it "loads contacts with the last updated time" do
+          GoogleSharedContacts::Contact.should_receive(:new).with(
+            hash_including(:updated_at => Time.parse("2008-03-05T12:36:38.835Z"))).and_return(mock(:contact))
+          list = GoogleSharedContacts::ContactList.new(File.read("fixtures/contact_list.xml"))
+        end
+        it "loads contacts with the email field" do
+          GoogleSharedContacts::Contact.should_receive(:new).with(
+            hash_including(:email)).and_return(mock(:contact))
+          list = GoogleSharedContacts::ContactList.new(File.read("fixtures/contact_list.xml"))
+        end
       end
     end
   end

@@ -1,5 +1,5 @@
 require 'rubygems'
-require 'highrise'
+require File.dirname(__FILE__) + '/highrise'
 
 class BigCity
   def initialize(key, target)
