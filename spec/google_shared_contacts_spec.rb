@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + "/spec_helper"
 
 describe "Google Shared Contacts" do
   before do
-    FakeWeb.register_uri(:post, GoogleSharedContacts::URLS[:client_login], :body => "")
+    FakeWeb.register_uri(:post, GoogleSharedContacts::URLS[:client_login] + "?", :body => "")
     @gsc = GoogleSharedContacts.new(mock(:username), mock(:password), "example.com")
   end
 
@@ -39,11 +39,9 @@ describe "Google Shared Contacts" do
   end
 
   context "retrieving contacts" do
-    xit "asks google for the contact list" do
-      contacts = GoogleSharedContacts::ContactList.new
-      contacts << GoogleSharedContacts::Contact.new(:email => 'chris1@eden.com')
-      FakeWeb.register_uri(:get, GoogleSharedContacts::URLS[:retrieve_all] % 'example.com', :body => contacts.to_atom)
-      @gsc.retrieve_all.first[:email].should == "chris1@eden.com"
+    it "asks google for the contact list" do
+      FakeWeb.register_uri(:get, GoogleSharedContacts::URLS[:retrieve_all] % 'example.com', :body => File.read("fixtures/contact_list.xml"))
+      @gsc.retrieve_all.first[:email].should == "chris2@example.com"
     end
   end
 
@@ -59,29 +57,52 @@ describe "Google Shared Contacts" do
         before do
           GoogleSharedContacts::Contact.stub!(:new).and_return(mock(:contact))
         end
-
+        def list_from_atom_xml
+          GoogleSharedContacts::ContactList.new(File.read("fixtures/contact_list.xml"))
+        end
         it "creates multiple contacts" do
-          list = GoogleSharedContacts::ContactList.new(File.read("fixtures/contact_list.xml"))
-          list.size.should == 2
+          list_from_atom_xml.size.should == 2
         end
         it "loads contacts with ids" do
           GoogleSharedContacts::Contact.should_receive(:new).with(hash_including(:id)).and_return(mock(:contact))
-          list = GoogleSharedContacts::ContactList.new(File.read("fixtures/contact_list.xml"))
+          list_from_atom_xml
         end
         it "loads contacts with the last updated time" do
           GoogleSharedContacts::Contact.should_receive(:new).with(
             hash_including(:updated_at => Time.parse("2008-03-05T12:36:38.835Z"))).and_return(mock(:contact))
-          list = GoogleSharedContacts::ContactList.new(File.read("fixtures/contact_list.xml"))
+          list_from_atom_xml
         end
         it "loads contacts with the email field" do
           GoogleSharedContacts::Contact.should_receive(:new).with(
-            hash_including(:email)).and_return(mock(:contact))
-          list = GoogleSharedContacts::ContactList.new(File.read("fixtures/contact_list.xml"))
+            hash_including(:email => "chris2@example.com")).and_return(mock(:contact))
+          list_from_atom_xml
+        end
+        it "loads contact with the edit_url for deletion" do
+          GoogleSharedContacts::Contact.should_receive(:new).with(
+            hash_including(:edit_url => "http://www.google.com/m8/feeds/contacts/example.com/full/c9012de/1204720598835000")).and_return(mock(:contact))
+          list_from_atom_xml
         end
       end
     end
   end
 
+  context "Contact" do
+    context "intialization" do
+      it "stores a given hash" do
+        stuff = mock(:stuff)
+        contact = GoogleSharedContacts::Contact.new(:id => stuff)
+        contact[:id].should == stuff
+      end
+    end
+    context "deletion" do
+      it "calls google to delete itself" do
+        url = "http://google.com/google"
+        contact = GoogleSharedContacts::Contact.new(:edit_url => url)
+        FakeWeb.register_uri(:delete, url, :body => "")
+        contact.delete!.should == true
+      end
+    end
+  end
 end
 
 

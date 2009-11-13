@@ -1,19 +1,20 @@
 require 'hpricot'
+require 'httparty'
 
 class GoogleSharedContacts
 
   URLS = {
-    :client_login => "http://www.google.com:443/accounts/ClientLogin",
+    :client_login => "https://www.google.com/accounts/ClientLogin",
     :retrieve_all => "http://www.google.com/m8/feeds/contacts/%s/full"
   }
 
   def initialize(username, password, domain)
-    Net::HTTP.post_form(URI.parse(URLS[:client_login]),
+    HTTParty.post(URLS[:client_login], :body => {
       :accountType => "HOSTED",
       :Email => username,
       :Passwd => password,
       :service => "cp",
-      :source => "ChrisParsons-BigCity-1")
+      :source => "ChrisParsons-BigCity-1"})
     @domain = domain
   end
 
@@ -29,7 +30,7 @@ class GoogleSharedContacts
   end
 
   def retrieve_all
-    contact_xml = Net::HTTP.get(URI.parse(GoogleSharedContacts::URLS[:retrieve_all] % @domain))
+    contact_xml = HTTParty.get(GoogleSharedContacts::URLS[:retrieve_all] % @domain)
     ContactList.new(contact_xml)
   end
 
@@ -41,14 +42,11 @@ class GoogleSharedContacts
         (list/"entry").each do |entry|
           contact = Contact.new(:id => (entry/"id").inner_html.strip,
                                 :updated_at => Time.parse((entry/"updated").inner_html),
-                                :email => (entry/"gd:email").first.attributes[:address])
+                                :email => (entry/"gd:email").first[:address],
+                                :edit_url => (entry/"link[@rel='edit']").first[:href].strip)
           self << contact
         end
       end
-    end
-
-    def to_atom
-      ""
     end
   end
 
@@ -56,6 +54,10 @@ class GoogleSharedContacts
     def initialize(hash = {})
       super
       merge! hash
+    end
+    def delete!
+      HTTParty.delete(self[:edit_url])
+      true
     end
   end
 end

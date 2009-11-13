@@ -2,6 +2,7 @@ Gem requirements:
 
 simple-rss
 activeresource
+httparty
 
 To run tests you'll need:
 
