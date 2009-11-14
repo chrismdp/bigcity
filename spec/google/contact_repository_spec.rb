@@ -34,14 +34,28 @@ describe "Google::ContactRepository" do
 
   context "retrieving contacts" do
     it "asks google for the contact list" do
-      FakeWeb.register_uri(:get, Google::ContactRepository::URLS[:retrieve_all] % 'example.com', :body => File.read("fixtures/contact_list.xml"))
+      FakeWeb.register_uri(:get, Google::ContactRepository::URL[:retrieve_all] % 'example.com', :body => File.read("fixtures/contact_list.xml"))
       @gsc.retrieve_all.first[:email].should == "chris2@example.com"
     end
   end
 
   context "creating contacts from an external list" do
+    it "creates the contacts from a contact list" do
+      @gsc.create_all([]).should be_true
+    end
+    it "calls create individually for each contact" do
+      contact = mock(:contact)
+      @gsc.should_receive(:create).with(contact)
+      @gsc.create_all([contact])
+    end
   end
-
+  context "creating contacts individually" do
+    it "fires off a request to the server" do
+      FakeWeb.register_uri(:post, Google::ContactRepository::URL[:create] % 'example.com', :body => File.read("fixtures/contact_list.xml"))
+      contact = mock(:contact, :to_xml => "")
+      @gsc.create(contact)
+    end
+  end
 end
 
 
