@@ -21,8 +21,13 @@ module Google
 
     def delete_all
       retrieve_all.each do |contact|
-        contact.delete!
+        delete(contact)
       end
+    end
+
+    def delete(contact)
+      HTTParty.delete(contact[:edit_url])
+      true
     end
 
     def retrieve_all

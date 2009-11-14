@@ -4,9 +4,8 @@ module Google
       super
       merge! hash
     end
-    def delete!
-      HTTParty.delete(self[:edit_url])
-      true
+    def to_atom
+      "<entry>"
     end
   end
 end

@@ -23,12 +23,18 @@ describe "Google::ContactRepository" do
 
     it "deletes the contacts one by one" do
       contacts = (1..10).collect do
-        contact = mock(:contact)
-        contact.should_receive(:delete!)
-        contact
+        mock(:contact)
       end
       @gsc.stub!(:retrieve_all).and_return(contacts)
+      @gsc.should_receive(:delete).exactly(10).times
       @gsc.delete_all
+    end
+
+    it "calls google to delete contacts" do
+      url = "http://google.com/google"
+      contact = { :edit_url => url }
+      FakeWeb.register_uri(:delete, url, :body => "")
+      @gsc.delete(contact).should == true
     end
   end
 

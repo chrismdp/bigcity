@@ -8,12 +8,10 @@ describe "Google::Contact" do
       contact[:id].should == stuff
     end
   end
-  context "deletion" do
-    it "calls google to delete itself" do
-      url = "http://google.com/google"
-      contact = Google::Contact.new(:edit_url => url)
-      FakeWeb.register_uri(:delete, url, :body => "")
-      contact.delete!.should == true
+  context "converting to atom" do
+    it "returns an atom description" do
+      contact = Google::Contact.new
+      contact.to_atom.should match("<entry>")
     end
   end
 end
