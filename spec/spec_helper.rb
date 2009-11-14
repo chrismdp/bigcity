@@ -3,6 +3,7 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 
 require 'rubygems'
 require 'bigcity'
+require 'builder'
 
 require 'spec'
 require 'spec/autorun'

@@ -58,7 +58,7 @@ describe "Google::ContactRepository" do
   context "creating contacts individually" do
     it "fires off a request to the server" do
       FakeWeb.register_uri(:post, Google::ContactRepository::URL[:create] % 'example.com', :body => File.read("fixtures/contact_list.xml"))
-      contact = mock(:contact, :to_xml => "")
+      contact = mock(:contact, :to_atom => "")
       @gsc.create(contact)
     end
   end
