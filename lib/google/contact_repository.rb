@@ -26,7 +26,7 @@ module Google
     end
 
     def delete(contact)
-      HTTParty.delete(contact[:edit_url])
+      HTTParty.delete(contact[:edit_url], :headers => { "Authorization" => "GoogleLogin auth=#{@token}"})
       true
     end
 
