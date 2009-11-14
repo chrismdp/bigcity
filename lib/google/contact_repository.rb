@@ -5,17 +5,11 @@ module Google
   class ContactRepository
 
     URLS = {
-      :client_login => "https://www.google.com/accounts/ClientLogin",
       :retrieve_all => "http://www.google.com/m8/feeds/contacts/%s/full"
     }
 
-    def initialize(username, password, domain)
-      HTTParty.post(URLS[:client_login], :body => {
-        :accountType => "HOSTED",
-        :Email => username,
-        :Passwd => password,
-        :service => "cp",
-        :source => "ChrisParsons-BigCity-1"})
+    def initialize(token, domain)
+      @token = token
       @domain = domain
     end
 
@@ -31,7 +25,7 @@ module Google
     end
 
     def retrieve_all
-      contact_xml = HTTParty.get(Google::ContactRepository::URLS[:retrieve_all] % @domain)
+      contact_xml = HTTParty.get(Google::ContactRepository::URLS[:retrieve_all] % @domain, :headers => { "Authorization" => "GoogleLogin #{@token}"})
       Google::ContactList.new(contact_xml)
     end
   end

@@ -1,5 +1,10 @@
-require 'rubygems'
-require File.dirname(__FILE__) + '/highrise'
+lib = File.dirname(__FILE__)
+
+require lib + '/highrise'
+require lib + '/google/contact_repository'
+require lib + '/google/contact'
+require lib + '/google/contact_list'
+require lib + '/google/client_login'
 
 class BigCity
   def initialize(key, target)

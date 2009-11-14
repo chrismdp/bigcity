@@ -2,15 +2,9 @@ require File.dirname(__FILE__) + "/../spec_helper"
 
 describe "Google::ContactRepository" do
   before do
-    FakeWeb.register_uri(:post, Google::ContactRepository::URLS[:client_login] + "?", :body => "")
-    @gsc = Google::ContactRepository.new(mock(:username), mock(:password), "example.com")
+    @gsc = Google::ContactRepository.new(mock(:token), "example.com")
   end
 
-  context "initialization" do
-    it "accepts a username/password" do
-      Google::ContactRepository.new(mock(:username), mock(:password), mock(:domain))
-    end
-  end
 
   context "replacing contacts on the server" do
     it "deletes contacts before creating new ones" do
